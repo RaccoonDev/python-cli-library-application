@@ -35,6 +35,25 @@ uv run pre-commit install     # run lint and type checks on commit
 uv build                      # build sdist and wheel into dist/
 ```
 
+## Testing the CLI with fakes
+
+Commands get their services from a `Deps` object on Typer's context (`ctx.obj`), not from module-level imports. The root callback fills in the real `Deps()` when nothing was passed, so normal runs need no setup. Tests pass their own:
+
+```python
+from typer.testing import CliRunner
+from cli_template.cli.app import Deps, app
+
+
+def fake_greet(name: str, *, excited: bool = False) -> str:
+    return "stubbed"
+
+
+result = CliRunner().invoke(app, ["hello", "Ada"], obj=Deps(greet=fake_greet))
+assert result.stdout.strip() == "stubbed"
+```
+
+When the CLI needs an HTTP client, a clock or config, add a field to `Deps` instead of patching. Keep library tests in `tests/test_core.py` free of the CLI, so fakes are only needed at the edges.
+
 ## Using this template
 
 Rename `cli_template` / `cli-template` to your project's name in `pyproject.toml`, `src/`, `tests/`, and this README, then run `uv lock`.
