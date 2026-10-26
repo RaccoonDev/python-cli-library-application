@@ -43,8 +43,10 @@ Commands get their services from a `Deps` object on Typer's context (`ctx.obj`),
 from typer.testing import CliRunner
 from cli_template.cli.app import Deps, app
 
+
 def fake_greet(name: str, *, excited: bool = False) -> str:
     return "stubbed"
+
 
 result = CliRunner().invoke(app, ["hello", "Ada"], obj=Deps(greet=fake_greet))
 assert result.stdout.strip() == "stubbed"
